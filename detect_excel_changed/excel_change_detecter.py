@@ -14,6 +14,8 @@ class ExecelChangeDetector:
         """
         Detect file row which font color are set by rgb.
         """
+
+        changed_l = []
         wb = openpyxl.load_workbook(excel_file, read_only=True)
         for sheet in wb:
             for row in sheet.rows:
@@ -26,3 +28,20 @@ class ExecelChangeDetector:
                         row_no = cell.row
                 if colored_text:
                     self._logger.debug(f"[{sheet.title}:row={row_no}] {colored_text}")
+                    changed_l.append(f"[{sheet.title}:row={row_no}] {colored_text}")
+
+        if changed_l:
+            self._output_file('./_outputs/changed.log', changed_l)
+
+    def _output_file(self, output_f: str, contents_l: list):
+        if not contents_l:
+            return ''
+
+        out_dir = os.path.dirname(output_f)
+        if not os.path.exists(out_dir):
+            os.mkdir(out_dir)
+
+        with open(output_f, 'w', encoding="utf-8") as f:
+            f.writelines('\n'.join(contents_l))
+
+        self._logger.debug(f"output csv: {output_f}")
